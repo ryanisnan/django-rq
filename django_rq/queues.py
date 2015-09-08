@@ -71,7 +71,6 @@ def get_redis_connection(config, use_strict_redis=False):
                 # cache.client.client used in older versions
                 try:
                     from django_redis import get_redis_connection as get_dr_redis_connection
-                    print 'get_dr_redis_connection'
                     return get_dr_redis_connection(config['USE_REDIS_CACHE'])
                 except AttributeError:
                     return cache.client.client
