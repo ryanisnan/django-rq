@@ -6,6 +6,8 @@ from rq.queue import FailedQueue, Queue
 
 from django_rq import thread_queue
 
+import logging
+
 
 def get_commit_mode():
     """
@@ -66,14 +68,21 @@ def get_redis_connection(config, use_strict_redis=False):
             # is a pluggable backend that return its Redis connection as
             # its `client`
             try:
-                # To get Redis connection on django-redis >= 3.4.0
-                # we need to use cache.client.get_client() instead of
-                # cache.client.client used in older versions
+                # Use get_redis_connection from django-redis to take
+                # advantage of connection pooling.
                 try:
                     from django_redis import get_redis_connection as get_dr_redis_connection
+                    logger = logging.getLogger('rq.worker')
+                    logger.info('get_redis_connection called!')
                     return get_dr_redis_connection(config['USE_REDIS_CACHE'])
-                except AttributeError:
-                    return cache.client.client
+                except ImportError:
+                    # To get Redis connection on django-redis >= 3.4.0
+                    # we need to use cache.client.get_client() instead of
+                    # cache.client.client used in older versions
+                    try:
+                        return cache.client.get_client()
+                    except AttributeError:
+                        return cache.client.client
             except NotImplementedError:
                 pass
         else:
