@@ -6,6 +6,8 @@ from rq.queue import FailedQueue, Queue
 
 from django_rq import thread_queue
 
+import logging
+
 
 def get_commit_mode():
     """
@@ -70,6 +72,8 @@ def get_redis_connection(config, use_strict_redis=False):
                 # advantage of connection pooling.
                 try:
                     from django_redis import get_redis_connection as get_dr_redis_connection
+                    logger = logging.getLogger('rq.worker')
+                    logger.info('get_redis_connection called!')
                     return get_dr_redis_connection(config['USE_REDIS_CACHE'])
                 except ImportError:
                     # To get Redis connection on django-redis >= 3.4.0
